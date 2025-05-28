@@ -11,11 +11,11 @@ disp(V)
 
 %b)
 
-% TODO: Used AI to find this matrix, maybe we need to have a better
-% solution for this. Thimo, what do you think?
+% Matrix obtained using: orth(randn(3,3));
+U = [-0.1990 -0.1218  0.9724;
+     -0.1953 -0.9674 -0.1612;
+      0.9603 -0.2220  0.1687];
 
-% Matrix is unitary if H'H = I
-U = orth(randn(3,3));
 disp("Unitary matrix U:")
 disp(U)
 
@@ -26,7 +26,6 @@ A = U(:, [1,2]) * [4 0 ; 0 1] * V';
 
 disp("Matrix A:")
 disp(A)
-
 
 %d)
 
