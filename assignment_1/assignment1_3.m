@@ -28,10 +28,38 @@ disp("Matrix A:")
 disp(A)
 
 %d)
+% for ||Ax||/||x|| we know the ratio makes it scale invariant so we have to
+% look for an angle at which it is sqr(17/2).
+% if x is one of the (scaled) right most singular vectors, it will be the
+% corrospinding singular value. Each other angle vector will between the
+% min/max of those.
+% we can use a linear combination of both the singular vectors to get a
+% value between both the singular values.
 
-% TODO
+% we define x = alpha1 * V1 + alpha2 * V2;
+% working this out for sqr(17/2) gives alpha:
+alpha1 = 1;
+alpha2 = 1;
+x = alpha1 * V(:, 1) + alpha2 * V(:, 2);
+disp("Vector x:")
+disp(x)
 
 %e)
+% projection
+P = A*inv(A'*A)*A';
+% I - P
+I = eye(3);
+% orthogonal vector to the column space of A (transpose cause column
+% space.)
+b = null(A');
+norm((I-P)*b);
 
+disp("Vector b:")
+disp(b)
 
+% we can check  the value is correct using:
+disp("If 1 b is correct:")
+disp(norm(A*((inv(A'*A)*A')*b)-b));
 
+%f
+f = 1;
