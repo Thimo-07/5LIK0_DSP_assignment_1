@@ -22,16 +22,16 @@ F = fimath('OverflowAction','Saturate',...
 % The fixed point representation used for the (input and output) data
 % These parameters can be changed
 fp_dat = struct();
-fp_dat.bitwidth = 13;
-fp_dat.fractionlength = 8;
+fp_dat.bitwidth = 9;
+fp_dat.fractionlength = 4;
 fp_dat.signedness = 1;
 fp_dat.fimath = F;
 
 % The fixed point representation used for the twiddle factors lookup table
 % These parameters can be changed
 fp_tf = struct();
-fp_tf.bitwidth = 9;
-fp_tf.fractionlength = 7;
+fp_tf.bitwidth = 6;
+fp_tf.fractionlength = 4;
 fp_tf.signedness = 1;
 fp_tf.fimath = F;
 
