@@ -57,7 +57,7 @@ for m = 1:M
     Xfp = fouriertransform_fixpt(x, TF, fp_dat, fp_tf, 1);
 
     % Compute the fixed point DFT, without using recursion
-    Xfp_no_rec = fouriertransform_fixpt_1(x, TF, fp_dat, fp_tf, 1);
+    Xfp_no_rec = fouriertransform_fixpt_pipeline(x, TF, fp_dat, fp_tf);
    
     % administrate the *absolute* error in the fixed point computation
     accError = accError + norm(X-double(Xfp)).^2;
