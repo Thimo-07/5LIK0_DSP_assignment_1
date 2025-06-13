@@ -17,11 +17,11 @@ function X = fouriertransform_fixpt(x, TF, fp_dat, fp_tf, step)
         % recursively compute the FFT on vectors half the size
         evenDFT = fouriertransform_fixpt(even, TF_fp, fp_dat, fp_tf, 2*step);
         oddDFT = fouriertransform_fixpt(odd, TF_fp, fp_dat, fp_tf, 2*step);
-
+        
         % Combine the results
         X = fi(zeros(1, N), fp_dat.signedness, fp_dat.bitwidth, fp_dat.fractionlength, fp_dat.fimath);
         for k = 1:N/2
-            t = TF((k-1)*step+1) * oddDFT(k);
+            t = TF_fp((k-1)*step+1) * oddDFT(k);
             X(k) = evenDFT(k) + t;
             X(k + N/2) = evenDFT(k) - t;
         end
