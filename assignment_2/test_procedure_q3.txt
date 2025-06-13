@@ -1,0 +1,75 @@
+Test 1
+ - TF: we know its -1 - 1, so we need signess and only single bit --> 2 bits before ,
+ - Smallest 'jump' between values of TF (real or complex) is 0.08
+       --> We want smallest komma getal to be ~0.05 --> we need 5 bits in fraction
+       
+ 
+ - Input data is also between -1 and 1 --> 2 bits before fraction (signed)
+ - Set fraction to 10 for initial test
+ 
+ RESULT: 9.0651
+
+Test 2
+ Made input data 32 bit, 30 bits for fraction to see to what extend the input is impacting the error
+ 
+ RESULT: 0.0055
+
+Test 3:
+ Almost there, lets make TF a bit more precise using 1 bit more in fraction.
+ 
+ RESULT: 0.00065001
+ This is within bounds!!!
+
+Test 4:
+ Using this more precise TF, can we have less precise input data but stay under the required error
+ 
+ 
+-------
+We found out that the ft_dat is also for output. And the output can definitly be bigger then
+[-1, 1] and thus we need more bits.
+------
+
+Test 5:
+ Max value of output is 16, so we need 4 bits  + 1 sign bit = 5
+ Lets use 10 bits for fraction for testing.
+ 
+ TF is same as Test 1
+ 
+ RESULT: 0.0065
+ 
+TEST 6:
+ Almost there, lets add a single fraction bit to data such that we have 2 bytes
+ FT is not changed
+ 
+ RESULT: 0.0056
+ 
+TEST 7:
+ Almost no change, kind of make sense as the actual absolute value change is small
+ lets update TF with 1 bit and see if its sufficient.
+ 
+ so, data is 15 bits, 10 fraction (same as Test 5)
+ TF is 8 bits, 6 fraction --> +1 fraction bit with respect to test6
+ 
+ RESULT: 0.0007904 [SUCCESS]
+ 
+ 
+TEST 8:
+ lets see if we can have smaller bit size for data without losing error
+ we remove a single bit in fraction, and thus overal remove 1 bit (size 14, frac 9)
+ TF is the same
+ 
+ RESULT: 7.4387e-04 
+ Almost no change, we can reduce more.
+ 
+Test 9:
+ lets remove 2 bits
+ 
+ RESULT: 0.0022
+ Just not enough
+
+Test 10:
+ final test, lets add 1 back, should be enough now (13,8)
+ 
+ RESULT: 0.0010 [SUCCESS]
+ 
+ 
