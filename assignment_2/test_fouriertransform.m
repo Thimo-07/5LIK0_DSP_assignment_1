@@ -22,16 +22,16 @@ F = fimath('OverflowAction','Saturate',...
 % The fixed point representation used for the (input and output) data
 % These parameters can be changed
 fp_dat = struct();
-fp_dat.bitwidth = 32;
-fp_dat.fractionlength = 20;
+fp_dat.bitwidth = 13;
+fp_dat.fractionlength = 8;
 fp_dat.signedness = 1;
 fp_dat.fimath = F;
 
 % The fixed point representation used for the twiddle factors lookup table
 % These parameters can be changed
 fp_tf = struct();
-fp_tf.bitwidth = 32;
-fp_tf.fractionlength = 20;
+fp_tf.bitwidth = 9;
+fp_tf.fractionlength = 7;
 fp_tf.signedness = 1;
 fp_tf.fimath = F;
 
@@ -40,6 +40,7 @@ M = 100;
 
 % To keep track of the accumulated error
 accError = 0;
+accError_no_rec = 0;
 
 for m = 1:M 
     % generate random inputs with a uniform distribution [-1, 1)
@@ -54,10 +55,18 @@ for m = 1:M
     % pass the input x, the table of twiddle factors, the selected
     % fixed point representations and initialize the step size to 1
     Xfp = fouriertransform_fixpt(x, TF, fp_dat, fp_tf, 1);
+
+    % Compute the fixed point DFT, without using recursion
+    Xfp_no_rec = fouriertransform_fixpt_1(x, TF, fp_dat, fp_tf, 1);
    
     % administrate the *absolute* error in the fixed point computation
     accError = accError + norm(X-double(Xfp)).^2;
+    
+    accError_no_rec = accError_no_rec + norm(X-double(Xfp_no_rec)).^2;
 end
 
 disp("The average absolute error is:");
 disp(accError/M);
+
+disp("The average absolute error [no recursion] is:");
+disp(accError_no_rec/M);
