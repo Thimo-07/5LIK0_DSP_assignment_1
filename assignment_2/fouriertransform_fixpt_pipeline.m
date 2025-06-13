@@ -11,29 +11,29 @@ function X = fouriertransform_fixpt_pipeline(x, TF, fp_dat, fp_tf)
     fp_tf.fractionlength = 4;
     fp_tf.signedness = 1;
 
-    % input data [-1,1) so two none fraction bit enough gives (-2,2) with minimal error to edges -1,1.
+    % input data [-1,1) so two none fraction bit enough gives (-2,1) with minimal error to edges -1,1.
     fp_dat.bitwidth = 6;
     fp_dat.fractionlength = 4;
     fp_dat.signedness = 1;
     X_fp = fi(x_reordered, fp_dat.signedness, fp_dat.bitwidth, fp_dat.fractionlength, fp_dat.fimath);
     TF_fp = fi(TF, fp_tf.signedness, fp_tf.bitwidth, fp_tf.fractionlength, fp_tf.fimath);
 
-    % output data [-2,2] so two none fraction bits enough gives (-5,5) with minimal error to edges -2,2.
+    % output data [-2,2] so two none fraction bits enough gives (-5,4) with minimal error to edges -2,2.
     fp_dat.bitwidth = 7;
     fp_dat.fractionlength = 4;
     X1 = fft_stage_core(X_fp, TF_fp, 1, fp_dat); % Stage 1 | core 1
     
-    % output data [-4,4] so two none fraction bits enough (-5,5).
+    % output data [-4,4] so two none fraction bits enough (-5,4).
     fp_dat.bitwidth = 7;
     fp_dat.fractionlength = 4;
     X2 = fft_stage_core(X1,   TF_fp, 2, fp_dat); % Stage 2 | core 2
 
-    % output data [-8,8] so three none fraction bits enough (-9,9).
+    % output data [-8,8] so three none fraction bits enough (-9,8).
     fp_dat.bitwidth = 8;
     fp_dat.fractionlength = 4;
     X3 = fft_stage_core(X2,   TF_fp, 3, fp_dat); % Stage 3 | core 3
 
-    % output data [-16,16] so four none fraction bits enough (-17,17).
+    % output data [-16,16] so four none fraction bits enough (-17,16).
     fp_dat.bitwidth = 9;
     fp_dat.fractionlength = 4;
     X  = fft_stage_core(X3,   TF_fp, 4, fp_dat); % Stage 4 | core 4
