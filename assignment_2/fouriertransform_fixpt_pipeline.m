@@ -1,3 +1,32 @@
+function X = fouriertransform_fixpt_pipeline(x, TF, fp_dat, fp_tf)
+    N = length(x);
+    if log2(N) ~= 4
+        error('ERROR: input must have length of 16 (2^4)');
+    end
+
+    x_reordered = bitrevorder(x);
+
+    fp_tf.bitwidth = 9;
+    fp_tf.fractionlength = 7;
+    fp_tf.signedness = 1;
+
+    fp_dat.bitwidth = 11;
+    fp_dat.fractionlength = 8;
+    fp_tf.signedness = 1;
+    X1 = fft_stage_core(x_reordered, TF, 1, fp_dat, fp_tf); % Stage 1
+
+    X2 = fft_stage_core(X1,          TF, 2, fp_dat, fp_tf); % Stage 2
+
+    fp_dat.bitwidth = 12;
+    fp_dat.fractionlength = 8;
+    X3 = fft_stage_core(X2,          TF, 3, fp_dat, fp_tf); % Stage 3
+
+    fp_dat.bitwidth = 13;
+    fp_dat.fractionlength = 8;
+    X  = fft_stage_core(X3,          TF, 4, fp_dat, fp_tf); % Stage 4 (final output)
+end
+
+
 % Disclaimer: description copied from a project during our bachalors, to keep as a reference.
 %             This was a FFT implentation on actual hardware, with a single core. so we will split the for loop in different functions.
 %
@@ -34,7 +63,7 @@ function x_reordered = bitrevorder(x)
     x_reordered = zeros(1, N);
     for k = 0:N-1
         rev = bitrev(k, nbits);
-        x_reordered(rev + 1) = x(k + 1);  % +1 for MATLAB 1-based indexing
+        x_reordered(rev + 1) = x(k + 1); 
     end
 end
 
@@ -57,12 +86,10 @@ end
 %
 %     this video gives a good view on how the butterfly calculation is performed by hand: https://www.youtube.com/watch?app=desktop&v=FaWSGmkboOs
 
-function X_out = fft_stage_core(X_in, TF, stage, fp_dat)
-    X_fp = fi(X_in, fp_dat.signedness, fp_dat.bitwidth, ...
-              fp_dat.fractionlength, fp_dat.fimath);
+function X_out = fft_stage_core(X_in, TF, stage, fp_dat, fp_tf)
+    X_fp = fi(X_in, fp_dat.signedness, fp_dat.bitwidth, fp_dat.fractionlength, fp_dat.fimath);
 
-    TF_fp = fi(TF, fp_tf.signedness, fp_tf.bitwidth, ...
-               fp_tf.fractionlength, fp_tf.fimath);
+    TF_fp = fi(TF, fp_tf.signedness, fp_tf.bitwidth, fp_tf.fractionlength, fp_tf.fimath);
 
     N = length(X_fp);
     X_out = X_fp;
@@ -89,23 +116,5 @@ function X_out = fft_stage_core(X_in, TF, stage, fp_dat)
         end
     end
 end
-
-% implementation of the full (4 stage) FFT pipeline
-function X = fouriertransform_pipeline_fixpt(x, TF, fp_dat)
-    N = length(x);
-    if log2(N) ~= 4
-        error('ERROR: input must have length of 16 (2^4)');
-    end
-
-    % Step 1: Bit-reverse reorder the input
-    x_reordered = bitrevorder(x);
-
-    % Step 3: Apply the 4 pipeline stages (each could run on a different core)
-    X1 = fft_stage_core(x_reordered, TF, 1, fp_dat); % Stage 1
-    X2 = fft_stage_core(X1,          TF, 2, fp_dat); % Stage 2
-    X3 = fft_stage_core(X2,          TF, 3, fp_dat); % Stage 3
-    X  = fft_stage_core(X3,          TF, 4, fp_dat); % Stage 4 (final output)
-end
-
 
 
