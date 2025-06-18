@@ -49,11 +49,9 @@ for i = 1:length(N_values)
     fprintf('Q: %.4f\n', f1/f2);
 end
 
-% Add vertical lines at digital frequencies 0.8*pi and pi
-% Convert digital frequencies to absolute frequencies
-% Add vertical lines
+% Add vertical lines at cutoff frequency
 xline(fco, 'r--', 'Fco', 'LineWidth', 1.5, 'LabelVerticalAlignment', 'bottom', 'HandleVisibility', 'off');
-% Add horizontal lines for threshold of 3.0e-3
+% Add horizontal lines for threshold of f1 and f2
 yline(0.8, 'b--', '0.8', 'LineWidth', 1.5, 'HandleVisibility', 'off');
 yline(0.1, 'b--', '0.1', 'LineWidth', 1.5, 'HandleVisibility', 'off');
 
