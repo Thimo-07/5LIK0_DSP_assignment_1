@@ -67,7 +67,7 @@ static esp_err_t filter_destroy(audio_element_handle_t self) {
 
 // Perform a filter operation on a pair of Left-Right samples
 // output samples should be assigned to *left_output and *right_output
-inline static void filter_sample(filter_t *filter, int16_t left_input, int16_t right_input, int16_t *left_output, int16_t *right_output) {
+inline static void IRAM_ATTR filter_sample(filter_t *filter, int16_t left_input, int16_t right_input, int16_t *left_output, int16_t *right_output) {
 
 	// update the buffer index
 	filter->index++;
@@ -80,31 +80,57 @@ inline static void filter_sample(filter_t *filter, int16_t left_input, int16_t r
 	/* compute the filters output */
 	int32_t accum_left = 0;
 	int32_t accum_right = 0;
-
-	for (int j = 0  ; j < FIR_FILTER_LENGTH; j++ )
-	{
-		// do computations in 32 bit for accuracy, considering the fixed point representation of the
-		// filter coefficients
-		accum_left += (int32_t)filter->buffer_left[filter->index] * (int32_t)FIRFilterCoefficients[j];
-		accum_right += (int32_t)filter->buffer_right[filter->index] * (int32_t)FIRFilterCoefficients[j];
-		if(filter->index != 0){
-			filter->index --;
+	
+	int idx = filter->index;
+	
+	// Process pairs of samples so we can read 32 bit coefficients
+	int pairs = FIR_FILTER_LENGTH / 2;
+	
+	for (int p = 0; p < pairs; p++) {
+		// read two coefficients using one single read
+		uint32_t coeff_pair = ((uint32_t*)FIRFilterCoefficients)[p];
+		int16_t coeff1 = (int16_t)(coeff_pair & 0xFFFF);
+		int16_t coeff2 = (int16_t)(coeff_pair >> 16);
+		
+		// first coeff in pair
+		accum_left += (int32_t)filter->buffer_left[idx] * (int32_t)coeff1;
+		accum_right += (int32_t)filter->buffer_right[idx] * (int32_t)coeff1;
+		
+		if(idx != 0) {
+			idx--;
 		} else {
-			filter->index = FIR_FILTER_LENGTH-1;
+			idx = FIR_FILTER_LENGTH-1;
 		}
+		
+		// Second coeff in pair
+		accum_left += (int32_t)filter->buffer_left[idx] * (int32_t)coeff2;
+		accum_right += (int32_t)filter->buffer_right[idx] * (int32_t)coeff2;
+		
+		if(idx != 0) {
+			idx--;
+		} else {
+			idx = FIR_FILTER_LENGTH-1;
+		}
+	}
+	
+	// Handle the remaining sample if FIR_FILTER_LENGTH is odd
+	if (FIR_FILTER_LENGTH & 1) {
+		accum_left += (int32_t)filter->buffer_left[idx] * (int32_t)FIRFilterCoefficients[FIR_FILTER_LENGTH-1];
+		accum_right += (int32_t)filter->buffer_right[idx] * (int32_t)FIRFilterCoefficients[FIR_FILTER_LENGTH-1];
 	}
 
 	// divide the computed outputs according to the fixed point representation of the filter coefficients
-	// if the filter coefficients have N fractional bits, we need to shit N bits
+	// if the filter coefficients have N fractional bits, we need to shift N bits
 	*left_output = accum_left >> FIR_FRACTIONAL_BITS;
 	*right_output = accum_right >> FIR_FRACTIONAL_BITS;
 }
+
 
 // This function is called from the ESP-ADF streaming pipeline
 // self is the handle to the filter element
 // in is a pointer to an input buffer filled with (many) samples
 // len is the amount of data in the buffer, in bytes
-static esp_err_t filter_process(audio_element_handle_t self, char *in, int len)
+static esp_err_t IRAM_ATTR filter_process(audio_element_handle_t self, char *in, int len)
 {
 
 	filter_t *filter = (filter_t *)audio_element_getdata(self);
